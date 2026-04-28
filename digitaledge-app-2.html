@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Elphas App</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg: #080808;
+  --surface: #111111;
+  --card: #161616;
+  --raised: #1c1c1c;
+  --border: #272727;
+  --gold: #c9a84c;
+  --gold-lite: #e4c97a;
+  --gold-dim: rgba(201,168,76,0.12);
+  --gold-glow: rgba(201,168,76,0.25);
+  --green: #22c55e;
+  --white: #f0ebe0;
+  --muted: #666;
+  --sub: #999;
+  --danger: #ef4444;
+}
+
+html, body {
+  height: 100%;
+  background: #000;
+  font-family: 'Syne', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── PHONE SHELL ── */
+.phone-shell {
+  width: 390px;
+  height: 844px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-height: 900px) {
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #000; }
+  .phone-shell { transform: scale(0.88); transform-origin: center center; }
+}
+@media (max-height: 780px) {
+  .phone-shell { transform: scale(0.76); }
+}
+@media (max-width: 420px) {
+  .phone-shell {
+    width: 100vw;
+    height: 100dvh;
+    transform: none !important;
+  }
+  body { background: var(--bg); }
+  .phone-frame { border-radius: 0 !important; border: none !important; }
+  .phone-notch, .phone-home { display: none !important; }
+}
+
+.phone-frame {
+  width: 390px;
+  height: 844px;
+  background: var(--bg);
+  border-radius: 50px;
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 1px #111,
+    0 0 80px rgba(0,0,0,0.9),
+    inset 0 0 0 1px #333;
+}
+
+.phone-notch {
+  position: absolute;
+  top: 14px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 34px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 14px;
+  gap: 6px;
+}
+
+.notch-cam {
+  width: 12px; height: 12px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  border: 1px solid #333;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 8px;
+  z-index: 150;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.04em;
+}
+
+.status-time { font-size: 13px; font-weight: 700; }
+.status-icons { display: flex; align-items: center; gap: 5px; }
+.status-icons svg { width: 14px; height: 14px; fill: var(--white); }
+
+/* ── APP SCREEN ── */
+.app {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 90px;
+  padding-top: 54px;
+  display: none;
+  scroll-behavior: smooth;
+}
+
+.screen.active { display: block; }
+
+.screen::-webkit-scrollbar { display: none; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 84px;
+  background: rgba(8,8,8,0.96);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 10px;
+  z-index: 100;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 12px;
+  transition: background 0.2s;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.nav-btn.active .nav-icon { color: var(--gold); }
+.nav-btn.active .nav-label { color: var(--gold); }
+
+.nav-icon {
+  font-size: 20px;
+  color: var(--muted);
+  transition: color 0.2s, transform 0.2s;
+  line-height: 1;
+}
+
+.nav-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.nav-btn.active .nav-icon { transform: scale(1.1); }
+
+/* ────────────────────────────────────────────────
+   HOME SCREEN
+──────────────────────────────────────────────── */
+.home-header {
+  padding: 20px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-greeting {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.home-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.home-brand em { color: var(--gold); font-style: normal; }
+
+.avatar-ring {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  background: var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Hero card */
+.hero-card {
+  margin: 20px 24px 0;
+  background: linear-gradient(135deg, #1a1505 0%, #0f0d08 50%, var(--surface) 100%);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 20px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(201,168,76,0.15), transparent 70%);
+  pointer-events: none;
+}
+
+.hero-card-tag {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-card-tag::before { content: '✦'; }
+
+.hero-card h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+
+.hero-card h2 span { color: var(--gold); font-style: italic; }
+
+.hero-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gold);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  transition: background 0.2s, transform 0.15s;
+  border: none;
+  cursor: pointer;
+}
+
+.hero-wa-btn:active { transform: scale(0.97); background: var(--gold-lite); }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 16px 24px 0;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.stat-n {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  display: block;
+}
+
+.stat-l {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Section header */
+.sec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 12px;
+}
+
+.sec-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.01em;
+}
+
+.sec-more {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+}
+
+/* Service pills (home) */
+.service-scroll {
+  display: flex;
+  gap: 10px;
+  padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.service-scroll::-webkit-scrollbar { display: none; }
+
+.service-pill {
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 16px;
+  width: 150px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  text-decoration: none;
+}
+
+.service-pill:active { transform: scale(0.97); border-color: var(--gold); }
+
+.sp-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+.sp-name { font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 3px; }
+.sp-price { font-size: 10px; color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; }
+
+/* Why us */
+.why-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 24px;
+}
+
+.why-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.why-icon { font-size: 20px; margin-bottom: 8px; display: block; }
+.why-title { font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.why-desc { font-size: 10px; color: var(--muted); line-height: 1.5; }
+
+/* ────────────────────────────────────────────────
+   SERVICES SCREEN
+──────────────────────────────────────────────── */
+.screen-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 54px;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.screen-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+
+.screen-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+
+.services-list {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.svc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.svc-card:active { transform: scale(0.985); border-color: var(--gold); }
+
+.svc-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+  transform-origin: left;
+}
+
+.svc-card:active::after { transform: scaleX(1); }
+
+.svc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.svc-icon-wrap {
+  width: 48px; height: 48px;
+  background: var(--gold-dim);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+
+.svc-price-badge {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.svc-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+
+.svc-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.svc-order-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--gold);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.svc-order-btn:active { background: var(--gold-lite); }
+
+/* ────────────────────────────────────────────────
+   ORDER SCREEN
+──────────────────────────────────────────────── */
+.order-form {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.form-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.form-input, .form-select, .form-textarea {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--white);
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  padding: 13px 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--gold);
+}
+
+.form-textarea { min-height: 90px; resize: none; line-height: 1.6; }
+
+.form-select option { background: #1a1a1a; }
+
+.service-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sub);
+  font-family: 'Syne', sans-serif;
+}
+
+.chip.selected {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--gold);
+}
+
+.chip-icon { font-size: 14px; }
+
+.submit-wa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #22c55e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  transition: background 0.2s, transform 0.15s;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.submit-wa:active { transform: scale(0.97); background: #1aac52; }
+
+/* ────────────────────────────────────────────────
+   ABOUT SCREEN
+──────────────────────────────────────────────── */
+.about-hero {
+  margin: 16px 24px 0;
+  background: linear-gradient(135deg, #120f02 0%, #0c0b06 100%);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-hero::before {
+  content: '✦';
+  position: absolute;
+  top: -10px; right: 20px;
+  font-size: 80px;
+  color: rgba(201,168,76,0.04);
+  pointer-events: none;
+}
+
+.about-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.about-tagline {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 240px;
+  margin: 0 auto;
+}
+
+.about-section {
+  padding: 20px 24px 0;
+}
+
+.about-section-title {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.about-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.trust-list { display: flex; flex-direction: column; gap: 10px; }
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 16px;
+}
+
+.trust-dot {
+  width: 8px; height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trust-text { font-size: 12px; color: var(--sub); line-height: 1.5; }
+
+.contact-cards { display: flex; flex-direction: column; gap: 10px; }
+
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.contact-card:active { transform: scale(0.97); border-color: var(--gold); }
+
+.cc-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.cc-icon.wa { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.25); }
+.cc-icon.phone { background: var(--gold-dim); border: 1px solid rgba(201,168,76,0.2); }
+.cc-icon.location { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.25); }
+
+.cc-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.cc-value { font-size: 13px; font-weight: 600; color: var(--white); }
+
+.cc-arrow { margin-left: auto; color: var(--muted); font-size: 14px; }
+
+/* Process steps */
+.process-list { display: flex; flex-direction: column; gap: 0; }
+
+.process-step {
+  display: flex;
+  gap: 14px;
+  padding: 0 0 20px;
+  position: relative;
+}
+
+.process-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 40px;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.ps-num {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.ps-content { padding-top: 8px; }
+.ps-title { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 3px; }
+.ps-desc { font-size: 11px; color: var(--muted); line-height: 1.55; }
+
+/* ── ANIMATIONS ── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screen.active > * {
+  animation: slideUp 0.35s ease both;
+}
+
+.screen.active > *:nth-child(2) { animation-delay: 0.05s; }
+.screen.active > *:nth-child(3) { animation-delay: 0.1s; }
+.screen.active > *:nth-child(4) { animation-delay: 0.15s; }
+.screen.active > *:nth-child(5) { animation-delay: 0.2s; }
+
+/* pulse on WA float */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+}
+
+.wa-pulse { animation: pulse 2s infinite; }
+
+/* divider */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 24px;
+}
+
+/* badge */
+.badge {
+  display: inline-block;
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 100px;
+}
+
+/* bottom padding spacer */
+.spacer { height: 20px; }
+
+/* Floating WA */
+.wa-float-app {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  width: 50px; height: 50px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 99;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+  transition: transform 0.2s;
+}
+
+.wa-float-app:active { transform: scale(0.9); }
+.wa-float-app svg { width: 24px; height: 24px; fill: white; }
+
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+<div class="phone-frame">
+
+  <!-- notch -->
+  <div class="phone-notch">
+    <div class="notch-cam"></div>
+  </div>
+
+  <!-- status bar -->
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <!-- signal -->
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <!-- wifi -->
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <!-- battery -->
+      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="app">
+
+    <!-- ══ HOME ══ -->
+    <div class="screen active" id="screen-home">
+
+      <div class="home-header">
+        <div>
+          <div class="home-greeting">Welcome to</div>
+          <div class="home-brand">El<em>phas</em></div>
+        </div>
+        <div class="avatar-ring">💼</div>
+      </div>
+
+      <!-- Hero Card -->
+      <div class="hero-card">
+        <div class="hero-card-tag">Kampala's Digital Partner</div>
+        <h2>Make Your Business Look <span>Professional</span></h2>
+        <a href="https://wa.me/256741312864?text=Hello!%20I%20found%20your%20app%20and%20I%20want%20to%20order%20a%20service." class="hero-wa-btn" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Chat on WhatsApp
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-n">6</span>
+          <span class="stat-l">Services</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-n">24h</span>
+          <span class="stat-l">Delivery</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-n">KLA</span>
+          <span class="stat-l">Kampala</span>
+        </div>
+      </div>
+
+      <!-- Popular Services -->
+      <div class="sec-header">
+        <span class="sec-title">Our Services</span>
+        <button class="sec-more" onclick="switchScreen('services')">See All →</button>
+      </div>
+
+      <div class="service-scroll">
+        <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20CV%20written." class="service-pill" target="_blank">
+          <span class="sp-icon">📄</span>
+          <div class="sp-name">CV Writing</div>
+          <div class="sp-price">From UGX 25,000</div>
+        </a>
+        <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20logo%20designed." class="service-pill" target="_blank">
+          <span class="sp-icon">🎨</span>
+          <div class="sp-name">Logo Design</div>
+          <div class="sp-price">From UGX 40,000</div>
+        </a>
+        <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20poster%20designed." class="service-pill" target="_blank">
+          <span class="sp-icon">📢</span>
+          <div class="sp-name">Posters</div>
+          <div class="sp-price">From UGX 20,000</div>
+        </a>
+        <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20website%20set%20up." class="service-pill" target="_blank">
+          <span class="sp-icon">🌐</span>
+          <div class="sp-name">Website</div>
+          <div class="sp-price">From UGX 150,000</div>
+        </a>
+      </div>
+
+      <!-- Why Us -->
+      <div class="sec-header">
+        <span class="sec-title">Why Choose Us</span>
+      </div>
+
+      <div class="why-grid">
+        <div class="why-card">
+          <span class="why-icon">⚡</span>
+          <div class="why-title">Fast Delivery</div>
+          <div class="why-desc">Most orders done within 24 hours</div>
+        </div>
+        <div class="why-card">
+          <span class="why-icon">💰</span>
+          <div class="why-title">Affordable</div>
+          <div class="why-desc">Transparent pricing, no surprises</div>
+        </div>
+        <div class="why-card">
+          <span class="why-icon">✅</span>
+          <div class="why-title">Revisions</div>
+          <div class="why-desc">Free changes until you're happy</div>
+        </div>
+        <div class="why-card">
+          <span class="why-icon">📱</span>
+          <div class="why-title">Pay on Delivery</div>
+          <div class="why-desc">Mobile Money accepted</div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+    </div><!-- /home -->
+
+    <!-- ══ SERVICES ══ -->
+    <div class="screen" id="screen-services">
+
+      <div class="screen-header">
+        <div class="screen-title">Services</div>
+        <div class="screen-sub">Tap any service to order via WhatsApp</div>
+      </div>
+
+      <div class="services-list">
+
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-icon-wrap">📄</div>
+            <span class="svc-price-badge">From UGX 25,000</span>
+          </div>
+          <div class="svc-name">CV / Resume Writing</div>
+          <p class="svc-desc">A professionally written and formatted CV that stands out to employers. Includes layout design and proofreading.</p>
+          <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20CV%20written.%20Please%20help." class="svc-order-btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Order on WhatsApp
+          </a>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-icon-wrap">🎨</div>
+            <span class="svc-price-badge">From UGX 40,000</span>
+          </div>
+          <div class="svc-name">Logo Design</div>
+          <p class="svc-desc">Clean, memorable logos that represent your brand. High-resolution files delivered, revisions included.</p>
+          <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20logo%20designed%20for%20my%20business." class="svc-order-btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Order on WhatsApp
+          </a>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-icon-wrap">📢</div>
+            <span class="svc-price-badge">From UGX 20,000</span>
+          </div>
+          <div class="svc-name">Posters & Flyers</div>
+          <p class="svc-desc">Eye-catching promotional designs for events and businesses. Print-ready and digital formats included.</p>
+          <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20poster%20or%20flyer%20designed." class="svc-order-btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Order on WhatsApp
+          </a>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-icon-wrap">🌐</div>
+            <span class="svc-price-badge">From UGX 150,000</span>
+          </div>
+          <div class="svc-name">Website Setup</div>
+          <p class="svc-desc">Get your business online with a clean, professional website. Fast, mobile-friendly, and ready to launch.</p>
+          <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20a%20website%20built%20for%20my%20business." class="svc-order-btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Order on WhatsApp
+          </a>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-icon-wrap">📱</div>
+            <span class="svc-price-badge">From UGX 30,000</span>
+          </div>
+          <div class="svc-name">Social Media Setup</div>
+          <p class="svc-desc">Full setup of Facebook, Instagram, or TikTok pages — profile art, bio, cover, and first posts included.</p>
+          <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20my%20social%20media%20pages%20set%20up." class="svc-order-btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Order on WhatsApp
+          </a>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-top">
+            <div class="svc-icon-wrap">💡</div>
+            <span class="svc-price-badge">From UGX 60,000</span>
+          </div>
+          <div class="svc-name">Business Branding</div>
+          <p class="svc-desc">Business name ideas, colour palette, logo, and a complete mini brand kit to launch with confidence.</p>
+          <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20full%20branding%20for%20my%20business." class="svc-order-btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Order on WhatsApp
+          </a>
+        </div>
+
+        <div class="spacer"></div>
+      </div>
+    </div><!-- /services -->
+
+    <!-- ══ ORDER ══ -->
+    <div class="screen" id="screen-order">
+
+      <div class="screen-header">
+        <div class="screen-title">Place an Order</div>
+        <div class="screen-sub">Fill in your details — we'll quote you on WhatsApp</div>
+      </div>
+
+      <div class="order-form">
+
+        <div class="form-group">
+          <label class="form-label">Choose Service</label>
+          <div class="service-chips">
+            <div class="chip selected" onclick="selectChip(this)"><span class="chip-icon">📄</span>CV Writing</div>
+            <div class="chip" onclick="selectChip(this)"><span class="chip-icon">🎨</span>Logo Design</div>
+            <div class="chip" onclick="selectChip(this)"><span class="chip-icon">📢</span>Poster/Flyer</div>
+            <div class="chip" onclick="selectChip(this)"><span class="chip-icon">🌐</span>Website</div>
+            <div class="chip" onclick="selectChip(this)"><span class="chip-icon">📱</span>Social Media</div>
+            <div class="chip" onclick="selectChip(this)"><span class="chip-icon">💡</span>Branding</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input class="form-input" type="text" id="orderName" placeholder="e.g. John Mukasa">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input class="form-input" type="tel" id="orderPhone" placeholder="e.g. 0771 234 567">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tell Us More (Optional)</label>
+          <textarea class="form-textarea" id="orderDetails" placeholder="Describe what you need, your business name, preferred style, etc."></textarea>
+        </div>
+
+        <button class="submit-wa" onclick="sendOrder()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Send Order via WhatsApp
+        </button>
+
+        <div style="text-align:center; font-size:10px; color:var(--muted); padding-bottom:10px;">
+          This opens WhatsApp with your details pre-filled
+        </div>
+
+      </div>
+    </div><!-- /order -->
+
+    <!-- ══ ABOUT ══ -->
+    <div class="screen" id="screen-about">
+
+      <div class="about-hero">
+        <div class="about-logo">Elphas</div>
+        <p class="about-tagline">"I help individuals and small businesses look professional and stand out online — affordably and quickly."</p>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">Contact Us</div>
+        <div class="contact-cards">
+          <a class="contact-card" href="https://wa.me/256741312864?text=Hello!" target="_blank">
+            <div class="cc-icon wa">💬</div>
+            <div>
+              <div class="cc-label">WhatsApp</div>
+              <div class="cc-value">0741 312 864</div>
+            </div>
+            <div class="cc-arrow">→</div>
+          </a>
+          <a class="contact-card" href="tel:+256741312864">
+            <div class="cc-icon phone">📞</div>
+            <div>
+              <div class="cc-label">Call Us</div>
+              <div class="cc-value">0741 312 864</div>
+            </div>
+            <div class="cc-arrow">→</div>
+          </a>
+          <div class="contact-card">
+            <div class="cc-icon location">📍</div>
+            <div>
+              <div class="cc-label">Location</div>
+              <div class="cc-value">Kampala, Uganda</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">Why Trust Us</div>
+        <div class="trust-list">
+          <div class="trust-item"><div class="trust-dot"></div><div class="trust-text">Every order handled personally — no middlemen</div></div>
+          <div class="trust-item"><div class="trust-dot"></div><div class="trust-text">Free revisions until you're 100% satisfied</div></div>
+          <div class="trust-item"><div class="trust-dot"></div><div class="trust-text">Transparent pricing — no hidden charges</div></div>
+          <div class="trust-item"><div class="trust-dot"></div><div class="trust-text">Most orders delivered within 24 hours</div></div>
+          <div class="trust-item"><div class="trust-dot"></div><div class="trust-text">Pay on delivery via Mobile Money</div></div>
+          <div class="trust-item"><div class="trust-dot"></div><div class="trust-text">Fast WhatsApp replies — usually within 30 min</div></div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-section-title">How It Works</div>
+        <div class="process-list">
+          <div class="process-step">
+            <div class="ps-num">1</div>
+            <div class="ps-content">
+              <div class="ps-title">Message Us</div>
+              <div class="ps-desc">Send a WhatsApp message with what you need. We reply fast — within minutes.</div>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="ps-num">2</div>
+            <div class="ps-content">
+              <div class="ps-title">We Discuss</div>
+              <div class="ps-desc">A few quick questions about your style, business, and preferences.</div>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="ps-num">3</div>
+            <div class="ps-content">
+              <div class="ps-title">We Deliver</div>
+              <div class="ps-desc">Finished work sent to you within 24 hours — ready to use.</div>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="ps-num">4</div>
+            <div class="ps-content">
+              <div class="ps-title">You Pay</div>
+              <div class="ps-desc">Happy with the result? Pay via Mobile Money. Simple.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+    </div><!-- /about -->
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" onclick="switchScreen('home')" id="nav-home">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+      </button>
+      <button class="nav-btn" onclick="switchScreen('services')" id="nav-services">
+        <div class="nav-icon">💼</div>
+        <div class="nav-label">Services</div>
+      </button>
+      <button class="nav-btn" onclick="switchScreen('order')" id="nav-order">
+        <div class="nav-icon">✉️</div>
+        <div class="nav-label">Order</div>
+      </button>
+      <button class="nav-btn" onclick="switchScreen('about')" id="nav-about">
+        <div class="nav-icon">ℹ️</div>
+        <div class="nav-label">About</div>
+      </button>
+    </nav>
+
+    <!-- Floating WA -->
+    <a href="https://wa.me/256741312864?text=Hello!%20I%20need%20help." class="wa-float-app wa-pulse" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+
+  </div><!-- /app -->
+</div><!-- /phone-frame -->
+</div><!-- /phone-shell -->
+
+<script>
+function switchScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  document.getElementById('screen-' + name).scrollTop = 0;
+}
+
+function selectChip(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function sendOrder() {
+  const selected = document.querySelector('.chip.selected');
+  const service = selected ? selected.innerText.trim() : 'a service';
+  const name = document.getElementById('orderName').value.trim() || 'a client';
+  const phone = document.getElementById('orderPhone').value.trim() || 'not provided';
+  const details = document.getElementById('orderDetails').value.trim();
+
+  let msg = `Hello DigitalEdge! I would like to order:\n\n*Service:* ${service}\n*Name:* ${name}\n*Phone:* ${phone}`;
+  if (details) msg += `\n*Details:* ${details}`;
+  msg += `\n\nPlease advise on price and timeline. Thank you!`;
+
+  const encoded = encodeURIComponent(msg);
+  window.open(`https://wa.me/256741312864?text=${encoded}`, '_blank');
+}
+
+// Clock
+function updateTime() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2,'0');
+  const m = now.getMinutes().toString().padStart(2,'0');
+  document.querySelector('.status-time').textContent = h + ':' + m;
+}
+updateTime();
+setInterval(updateTime, 30000);
+</script>
+
+</body>
+</html>
